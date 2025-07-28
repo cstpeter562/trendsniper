@@ -1,0 +1,13 @@
+name: Sync Trends Every 6 Hours
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Every 6 hours UTC
+  workflow_dispatch:
+
+jobs:
+  ping-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Sync Endpoint
+        run: curl -X GET https://trendsniperz.vercel.app/api/sync-trends
