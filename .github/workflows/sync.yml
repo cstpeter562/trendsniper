@@ -2,12 +2,15 @@ name: Sync Trends Every 6 Hours
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Every 6 hours UTC
-  workflow_dispatch:
+    - cron: '0 */6 * * *'  # every 6 hours
+  workflow_dispatch:      # optional manual trigger
 
 jobs:
-  ping-sync:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Call Sync Endpoint
-        run: curl -X GET https://trendsniperz.vercel.app/api/sync-trends
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm install
+      - name: Run trend sync script
+        run: npm run sync-trends
