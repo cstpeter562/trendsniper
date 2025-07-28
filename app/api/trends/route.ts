@@ -1,29 +1,25 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import { MongoClient } from 'mongodb'
+
+const uri = process.env.MONGO_URI || ''
+const dbName = 'trendsniper'
+const collectionName = 'trends'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const trends = [
-    {
-      product: "Bluey Doll",
-      company: "Disney",
-      ticker: "DIS",
-      hype: 87,
-      description: "Sold out on Target and restocking this weekend. High flip potential for collectors.",
-    },
-    {
-      product: "Labubu Forest Series",
-      company: "Pop Mart",
-      ticker: "PMRTF",
-      hype: 93,
-      description: "Massive TikTok haul video went viral. Resale value already doubled.",
-    },
-    {
-      product: "Kaws x Uniqlo Tee",
-      company: "Fast Retailing",
-      ticker: "FRCOY",
-      hype: 78,
-      description: "Reddit sleeper pick. Limited drop rumored next Friday.",
-    }
-  ];
+  const client = new MongoClient(uri)
+  try {
+    await client.connect()
+    const db = client.db(dbName)
+    const collection = db.collection(collectionName)
 
-  return NextResponse.json(trends);
+    const trends = await collection.find({}).sort({ hype: -1 }).toArray()
+    return NextResponse.json(trends)
+  } catch (error) {
+    console.error('Error fetching trends:', error)
+    return NextResponse.json({ error: 'Failed to fetch trends' }, { status: 500 })
+  } finally {
+    await client.close()
+  }
 }
