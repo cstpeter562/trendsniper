@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "sync-trends": "ts-node app/api/sync-trends/route.ts"
+    "sync-trends": "ts-node --project tsconfig.json app/api/sync-trends/route.ts"
   },
   "dependencies": {
     "mongodb": "4.0",
