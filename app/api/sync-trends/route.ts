@@ -1,28 +1,24 @@
-// app/api/sync-trends/route.ts
+import { NextResponse } from 'next/server';
+import { connectToDatabase } from '@/lib/mongo';
+import Trend from '@/models/Trend';
+import { fetchTrendsFromSources } from '@/lib/fetchTrends';
 
-import { MongoClient } from 'mongodb';
-import { MONGO_URI, DB_NAME } from '@/lib/mongo';
-
-async function syncTrends() {
-  const client = new MongoClient(MONGO_URI);
+export async function POST() {
   try {
-    await client.connect();
-    const db = client.db(DB_NAME);
-    const trends = db.collection('trends');
+    await connectToDatabase();
+    const newTrends = await fetchTrendsFromSources();
 
-    // Example: insert a dummy trend
-    const result = await trends.insertOne({
-      name: "Example trend",
-      timestamp: new Date()
-    });
+    for (const trend of newTrends) {
+      await Trend.updateOne(
+        { name: trend.name },
+        { $set: trend },
+        { upsert: true }
+      );
+    }
 
-    console.log("Trend synced:", result.insertedId);
+    return NextResponse.json({ success: true, message: 'Trends synced successfully' });
   } catch (error) {
-    console.error("Sync failed:", error);
-    process.exit(1); // Ensure CI fails on error
-  } finally {
-    await client.close();
+    console.error('Error syncing trends:', error);
+    return NextResponse.json({ success: false, error: 'Failed to sync trends' }, { status: 500 });
   }
 }
-
-syncTrends();

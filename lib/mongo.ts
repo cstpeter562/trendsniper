@@ -1,27 +1,29 @@
 import { MongoClient } from "mongodb";
 
-// Safe environment variable extraction
-export const MONGO_URI =
-  process.env.MONGO_URI ?? (() => { throw new Error("MONGO_URI not set"); })();
+if (!process.env.MONGO_URI) throw new Error("Missing MONGO_URI");
 
-export const DB_NAME =
-  process.env.DB_NAME ?? (() => { throw new Error("DB_NAME not set"); })();
+const uri = process.env.MONGO_URI;
+const dbName = "trendsniper";
 
-if (!MONGO_URI.startsWith("mongodb")) {
-  throw new Error("MONGO_URI must start with 'mongodb'");
+// Use global to persist the client across hot reloads (Next.js specific trick)
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
+
+declare global {
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-let cachedClient: MongoClient | null = null;
-
-export async function connectToDatabase() {
-  if (cachedClient) {
-    return cachedClient;
-  }
-
-  const client = new MongoClient(MONGO_URI);
-
-  await client.connect();
-  cachedClient = client;
-
-  return client;
+if (!global._mongoClientPromise) {
+  client = new MongoClient(uri);
+  global._mongoClientPromise = client.connect();
 }
+clientPromise = global._mongoClientPromise;
+
+export const connectToDatabase = async () => {
+  const client = await clientPromise;
+  const db = client.db(dbName);
+  return {
+    db,
+    trends: db.collection("trends")
+  };
+};

@@ -2,15 +2,15 @@
   "name": "trendsniper",
   "version": "0.1.0",
   "private": true,
+  "type": "commonjs",
   "scripts": {
-  "dev": "next dev --turbopack",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint",
-  "sync-trends": "node --loader ts-node/esm ./app/api/sync-trends/route.ts"
-}
-
- , "dependencies": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "sync-trends": "ts-node --transpile-only ./app/api/sync-trends/route.ts"
+  },
+  "dependencies": {
     "mongodb": "4.0",
     "next": "15.3.5",
     "react": "^19.1.1",
@@ -23,6 +23,7 @@
     "@types/react-dom": "^19.1.6",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
   }
 }
