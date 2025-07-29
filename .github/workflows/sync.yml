@@ -1,19 +1,22 @@
 name: Sync Trends Every 6 Hours
 
 on:
+  workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *'  # every 6 hours
-  workflow_dispatch:      # optional manual trigger
+    - cron: '0 */6 * * *'
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
+
       - name: Install dependencies
         run: npm install
+
+      - name: Install ts-node
+        run: npm install -g ts-node
+
       - name: Run trend sync script
         run: npm run sync-trends
-      - name: Install ts-node
-        run: npm install --save-dev ts-node
-
