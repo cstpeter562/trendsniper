@@ -1,16 +1,27 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient } from "mongodb";
 
-const uri = 'mongodb+srv://stpeterchristian:mG4UH4UKf424qG7z@trendsniper.tkjydw6.mongodb.net/?retryWrites=true&w=majority&appName=TrendSniper';
-const client = new MongoClient(uri);
-const dbName = 'TrendSniper';
+// Safe environment variable extraction
+export const MONGO_URI =
+  process.env.MONGO_URI ?? (() => { throw new Error("MONGO_URI not set"); })();
 
-export async function getTrendsFromDB() {
-  if (!client.topology?.isConnected()) {
-    await client.connect();
+export const DB_NAME =
+  process.env.DB_NAME ?? (() => { throw new Error("DB_NAME not set"); })();
+
+if (!MONGO_URI.startsWith("mongodb")) {
+  throw new Error("MONGO_URI must start with 'mongodb'");
+}
+
+let cachedClient: MongoClient | null = null;
+
+export async function connectToDatabase() {
+  if (cachedClient) {
+    return cachedClient;
   }
 
-  const db = client.db(dbName);
-  const collection = db.collection('trends');
-  const trends = await collection.find({}).toArray();
-  return trends;
+  const client = new MongoClient(MONGO_URI);
+
+  await client.connect();
+  cachedClient = client;
+
+  return client;
 }
